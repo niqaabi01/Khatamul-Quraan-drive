@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173f32">
+  <title>Khatamul Qur’an | A collective recitation</title>
+  <meta name="description" content="A shared Khatamul Qur’an drive in loving memory of a marhoom.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="ornament ornament-top" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Khatamul Qur'an home">
+      <img id="siteLogo" class="brand-logo" src="assets/logo-placeholder.svg" alt="Drive logo">
+      <span class="brand-copy"><strong id="brandTitle">KHATAMUL QUR’AN</strong><small>RECITATION DRIVE</small></span>
+    </a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="#home">Home</a><a href="#virtue">The Virtue</a><a href="#progress">Progress</a>
+      <button class="nav-button" id="organiserOpen">Organiser</button>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
+  </header>
+
+  <main id="home">
+    <section class="hero section-wrap">
+      <div class="hero-copy">
+        <p class="bismillah" lang="ar" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+        <p class="eyebrow">A collective recitation in loving memory of</p>
+        <h1 id="marhoomName">Our Beloved Marhoom</h1>
+        <p class="hero-subtitle" id="driveSubtitle">May every letter recited be a means of mercy, light and lasting reward.</p>
+        <a class="primary-button" href="#juz-grid">Choose a Juz <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="arch arch-back"></div><div class="arch arch-front"></div>
+        <div class="moon">☾</div><div class="star star-one">✦</div><div class="star star-two">✧</div>
+        <div class="book-stand"><div class="book-page"></div><div class="book-cover"></div></div>
+        <div class="hero-seal"><span lang="ar" dir="rtl">القرآن الكريم</span><small>THE NOBLE QUR’AN</small></div>
+      </div>
+    </section>
+
+    <section class="quote-card section-wrap" id="virtue">
+      <div class="quote-mark">“</div>
+      <p class="quote-label">THE VIRTUE OF RECITING THE QUR’AN</p>
+      <blockquote id="hadithText">“Whoever recites a letter from the Book of Allah will receive a good deed, and a good deed is multiplied tenfold.”</blockquote>
+      <p class="quote-source" id="hadithSource">Jamiʿ at-Tirmidhi 2910</p>
+      <p class="quote-note">A reminder of the immense virtue of recitation. Please verify wording and references with a trusted scholar before publishing.</p>
+    </section>
+
+    <section class="progress-section section-wrap" id="progress">
+      <div class="section-heading">
+        <div><p class="eyebrow">OUR SHARED INTENTION</p><h2>Every Juz brings us closer</h2></div>
+        <p class="section-intro">Choose an available portion, or return to update the Juz you have taken.</p>
+      </div>
+      <div class="stats-grid">
+        <article class="stat-card stat-total"><span class="stat-icon">۞</span><strong id="totalCount">30</strong><span>Total Juz</span></article>
+        <article class="stat-card stat-reading"><span class="stat-icon">◉</span><strong id="readingCount">0</strong><span>Being read</span></article>
+        <article class="stat-card stat-complete"><span class="stat-icon">✓</span><strong id="completedCount">0</strong><span>Completed</span></article>
+        <article class="stat-card stat-progress"><div class="progress-ring" id="progressRing"><span id="progressPercent">0%</span></div><span>Complete</span></article>
+      </div>
+    </section>
+
+    <section class="juz-section section-wrap" id="juz-grid">
+      <div class="section-heading juz-heading">
+        <div><p class="eyebrow">30 PORTIONS · ONE SHARED KHATAM</p><h2>Select a Juz</h2></div>
+        <div class="legend"><span><i class="dot available"></i>Available</span><span><i class="dot reading"></i>Being read</span><span><i class="dot completed"></i>Completed</span></div>
+      </div>
+      <div class="juz-grid" id="juzGrid" aria-live="polite"></div>
+      <p class="privacy-note"><span>✧</span> Your name will be visible to others so the community can see which Juz have been taken.</p>
+    </section>
+
+    <section class="closing section-wrap">
+      <p lang="ar" dir="rtl">اللَّهُمَّ تَقَبَّلْ مِنَّا</p>
+      <h2>May Allah accept from us.</h2>
+      <p>May Allah grant the marhoom mercy and forgiveness, illuminate their resting place, and accept every recitation. Ameen.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer"><span id="footerDriveName">Khatamul Qur’an Drive</span><span>Made with care, for the sake of Allah</span><button id="footerOrganiser">Organiser access</button></footer>
+
+  <div class="modal-backdrop" id="juzModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" data-close="juzModal" aria-label="Close">×</button>
+      <div class="modal-emblem" id="modalEmblem">۞</div>
+      <p class="eyebrow" id="modalEyebrow">JUZ 01</p>
+      <h2 id="modalTitle">الم</h2><p class="transliteration" id="modalTranslit">Alif Lam Mim</p>
+      <div id="modalBody"></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="organiserModal" hidden>
+    <section class="modal organiser-modal" role="dialog" aria-modal="true" aria-labelledby="organiserTitle">
+      <button class="modal-close" data-close="organiserModal" aria-label="Close">×</button>
+      <p class="eyebrow">DRIVE MANAGEMENT</p><h2 id="organiserTitle">Organiser dashboard</h2>
+      <p class="muted" id="organiserModeNote">Demo mode: changes are saved in this browser only.</p>
+      <div class="admin-tabs"><button class="tab active" data-tab="overview">Overview</button><button class="tab" data-tab="settings">Drive details</button><button class="tab" data-tab="data">Manage Juz</button></div>
+      <div id="adminPanel"></div>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
