@@ -191,6 +191,12 @@
         $("organiserLogin").addEventListener("submit", signInOrganiser);
       }
     } else if (adminTab === "settings") {
+      const isAdmin = !!firebaseUser && firebaseUser.uid === ADMIN_UID;
+      if (!isAdmin) {
+        panel.innerHTML = `<div class="empty-state"><h3>Organiser access required</h3><p>Drive details are available only to the signed-in organiser.</p><button class="button green" id="goToOrganiserLogin">Go to organiser sign-in</button></div>`;
+        $("goToOrganiserLogin").addEventListener("click", () => { adminTab = "overview"; renderAdmin(); });
+        return;
+      }
       panel.innerHTML = `<p class="muted">These details are saved in this browser in demo mode. To change the default for everyone, edit <code>config.js</code> in your GitHub repository.</p>
         <form id="driveSettings" class="admin-form">
           <div><label for="settingTitle">Drive title</label><input class="field" id="settingTitle" value="${esc(driveMeta.title)}" maxlength="80"></div>
