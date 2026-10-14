@@ -3,6 +3,8 @@
   const cfg = window.KHATAM_CONFIG || {};
   const STORAGE_KEY = `khatam-drive-${cfg.driveId || "default"}`;
   const OWNER_KEY = `khatam-owner-${cfg.driveId || "default"}`;
+  // This UID is checked in the UI as well as by the Firebase Realtime Database rules.
+  const ADMIN_UID = "WfxrXaXHL7Vtq8UZJIt6Nr3LDro1";
   const juzList = [
     ["الم","Alif Lam Mim"],["سَيَقُولُ","Sayaqool"],["تِلْكَ الرُّسُلُ","Tilkal Rusul"],
     ["لَنْ تَنَالُوا","Lan Tanaaloo"],["وَالْمُحْصَنَاتُ","Wal Mohsanat"],["لَا يُحِبُّ اللَّهُ","La Yuhibbullah"],
@@ -167,12 +169,27 @@
     document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === adminTab));
     const panel = $("adminPanel"), c = counts();
     if (adminTab === "overview") {
-      panel.innerHTML = `<div class="admin-stats"><div class="admin-stat"><strong>${c.available}</strong><span>Available</span></div><div class="admin-stat"><strong>${c.reading}</strong><span>Being read</span></div><div class="admin-stat"><strong>${c.completed}</strong><span>Completed</span></div></div>
+      const isAdmin = !!firebaseUser && firebaseUser.uid === ADMIN_UID;
+      const authPanel = isAdmin
+        ? `<div class="success-panel" style="margin-bottom:18px"><h3>Organiser access active</h3><p>You are signed in with the organiser account.</p><button class="button outline" id="organiserSignOut">Sign out</button></div>`
+        : `<form id="organiserLogin" class="admin-form" style="margin-bottom:22px">
+             <div class="wide"><p class="muted">Sign in with the organiser email and password to access the shared-drive reset.</p></div>
+             <div class="wide"><label for="organiserEmail">Organiser email</label><input class="field" id="organiserEmail" type="email" autocomplete="username" required maxlength="254"></div>
+             <div class="wide"><label for="organiserPassword">Password</label><input class="field" id="organiserPassword" type="password" autocomplete="current-password" required></div>
+             <div class="wide admin-actions"><button class="button green" type="submit" ${firebaseReady ? "" : "disabled"}>Sign in</button></div>
+             <div class="wide"><small class="muted">${firebaseReady ? "Organiser sign-in is available." : "Waiting for Firebase to connect. Refresh the page if this message remains."}</small></div>
+           </form>`;
+      panel.innerHTML = `${authPanel}<div class="admin-stats"><div class="admin-stat"><strong>${c.available}</strong><span>Available</span></div><div class="admin-stat"><strong>${c.reading}</strong><span>Being read</span></div><div class="admin-stat"><strong>${c.completed}</strong><span>Completed</span></div></div>
         <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>#</th><th>Juz name</th><th>Status</th><th>Reader</th><th>Action</th></tr></thead><tbody>${state.juz.map(j=>`<tr><td>${j.number}</td><td><span lang="ar" dir="rtl">${j.arabic}</span><br><small>${esc(j.transliteration)}</small></td><td><span class="status-pill ${j.status}">${j.status==="reading"?"Being read":j.status==="completed"?"Completed":"Available"}</span></td><td>${esc(j.reader||"—")}</td><td><button class="table-action" data-admin-juz="${j.number}">Manage</button></td></tr>`).join("")}</tbody></table></div>
-        <div class="admin-actions"><button class="button outline" id="exportCsv">Export CSV</button><button class="button outline" id="resetDrive">Reset all Juz</button></div>`;
+        <div class="admin-actions"><button class="button outline" id="exportCsv">Export CSV</button>${isAdmin ? '<button class="button outline" id="resetDrive">Reset all Juz</button>' : ''}</div>`;
       panel.querySelectorAll("[data-admin-juz]").forEach(b => b.addEventListener("click", () => {closeModal("organiserModal");openJuz(Number(b.dataset.adminJuz));}));
       $("exportCsv").addEventListener("click", exportCsv);
-      $("resetDrive").addEventListener("click", resetDrive);
+      if (isAdmin) {
+        $("resetDrive").addEventListener("click", resetDrive);
+        $("organiserSignOut").addEventListener("click", signOutOrganiser);
+      } else {
+        $("organiserLogin").addEventListener("submit", signInOrganiser);
+      }
     } else if (adminTab === "settings") {
       panel.innerHTML = `<p class="muted">These details are saved in this browser in demo mode. To change the default for everyone, edit <code>config.js</code> in your GitHub repository.</p>
         <form id="driveSettings" class="admin-form">
@@ -214,9 +231,65 @@
       catch(err){showToast("Could not restore that backup file.");}
     };reader.readAsText(file);
   }
-  function resetDrive() {
-    if(!confirm("Reset all 30 Juz to available? Export a backup first if needed."))return;
-    state={juz:emptyJuz()};saveLocal();renderGrid();renderAdmin();showToast("All Juz are available again.");
+  async function signInOrganiser(event) {
+    event.preventDefault();
+    if (!firebaseReady || !firebaseAuth) { showToast("Firebase is not connected yet. Please refresh and try again."); return; }
+    const email = $("organiserEmail").value.trim();
+    const password = $("organiserPassword").value;
+    try {
+      const {signInWithEmailAndPassword} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+      const credential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+      if (credential.user.uid !== ADMIN_UID) {
+        const {signOut, signInAnonymously} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+        await signOut(firebaseAuth);
+        const anon = await signInAnonymously(firebaseAuth);
+        firebaseUser = anon.user;
+        renderAdmin();
+        showToast("This account is not authorised as the organiser.");
+        return;
+      }
+      firebaseUser = credential.user;
+      renderAdmin();
+      showToast("Organiser signed in successfully.");
+    } catch (error) {
+      console.error("Organiser sign-in failed", error);
+      showToast(error?.code === "auth/invalid-credential" || error?.code === "auth/wrong-password" || error?.code === "auth/user-not-found" ? "Email or password is incorrect." : "Could not sign in. Check the account and try again.");
+    }
+  }
+
+  async function signOutOrganiser() {
+    if (!firebaseAuth) return;
+    try {
+      const {signOut, signInAnonymously} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+      await signOut(firebaseAuth);
+      const anon = await signInAnonymously(firebaseAuth);
+      firebaseUser = anon.user;
+      renderAdmin();
+      showToast("Signed out of organiser access.");
+    } catch (error) {
+      console.error("Organiser sign-out failed", error);
+      showToast("Could not sign out cleanly. Please refresh the page.");
+    }
+  }
+
+  async function resetDrive() {
+    if (!firebaseReady || !firebaseDb || !firebaseUser || firebaseUser.uid !== ADMIN_UID) {
+      showToast("Only the signed-in organiser can reset the shared drive.");
+      return;
+    }
+    if (!confirm("Reset all 30 Juz for EVERYONE? All reader names and completion statuses will be cleared.")) return;
+    try {
+      const {ref, set} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+      const fresh = {};
+      for (const j of emptyJuz()) fresh[j.number] = {...j, ownerUid:"", ownerToken:""};
+      await set(ref(firebaseDb, `drives/${cfg.driveId || "default"}/juz`), fresh);
+      state = {juz: emptyJuz().map(j => ({...j, ownerUid:""}))};
+      saveLocal(); renderGrid(); renderAdmin();
+      showToast("Alhamdulillah — all 30 Juz are available again.");
+    } catch (error) {
+      console.error("Shared drive reset failed", error);
+      showToast("Reset failed. Check Firebase rules and organiser sign-in.");
+    }
   }
   function initEvents() {
     $("juzGrid").addEventListener("click", e => {const card=e.target.closest("[data-juz]");if(card)openJuz(Number(card.dataset.juz));});
