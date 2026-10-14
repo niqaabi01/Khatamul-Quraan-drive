@@ -8,7 +8,7 @@ window.KHATAM_CONFIG = {
   title: "Khatamul Qur’an",
   marhoomName: "[Name of the Marhoom]",
   subtitle: "May every letter recited be a means of mercy, light and lasting reward.",
-  logoPath: "assets/muzdalifah-foundation-logo.jpg",
+  logoPath: "muzdalifah-foundation-logo.jpg",
   hadithText: "Whoever recites a letter from the Book of Allah will receive a good deed, and a good deed is multiplied tenfold.",
   hadithSource: "Jamiʿ at-Tirmidhi 2910",
   // Firebase Realtime Database configuration.
